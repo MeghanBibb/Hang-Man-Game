@@ -8,32 +8,105 @@
 
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 #include <vector>
 #include "MyVector.h"
 
 using namespace std;
 
+int hashKey(string word, int numItems);
+
 int main() {
-    int numGuesses = 7;
-    string word;
-    vector<string> storage;
+    int numGuesses = 4;
     ifstream input;
+    string word;
+    int key, numItems = 0, randIndex = 0;
+    unordered_map<int,string> dictionary;
+    pair<int,string> myPair;
+
     input.open("alphabet.txt");
     if(!input.is_open()){
         cout << "file not open" << endl;
         return 0;
-    } else {
-
-        //fills vector
     }
 
+    //fills map
+    do{
+        input >> word;
+        numItems++;
+        key = hashKey(word, numItems);
+        myPair.first = key;
+        myPair.second = word;
+        dictionary.insert(myPair);
+    }while(!input.eof());
+
+    randIndex = rand() % numItems;
+    word = dictionary.at(randIndex);
+
+    char letter;
+    bool valid = false, reveal = false;
+    do{
+        cout << "If you would like to guess a word input 'g': " << endl;
+        cout << "If you would like to have your word guessed insert 'w' : " << endl;
+        cin >> letter;
+        if(letter == 'G' || letter == 'W'){
+            //32 is the difference in ASCII values between upper and lower case
+            letter += 32;
+        }
+        if(letter == 'g' || letter == 'w'){
+            valid = true;
+        }
+    }while(!valid);
+
+    bool *foundNdx = new bool[word.size()];
+    bool found = false;
+    int wordSize = word.size();
+    for(int i = 0; i < wordSize; i++){
+        foundNdx[i] = false;
+    }
+
+    if(letter == 'g')
+    do{
+        cout << "Enter a letter" << endl;
+        cin >> letter;
+        for(unsigned int i = 0; i < wordSize; i++){
+            if(word.at(i) == letter){
+                reveal = true;
+                foundNdx[i] = true;
+            }
+        }
+        if(!reveal){
+            numGuesses--;
+        }else {
+            found = true;
+            for(int i = 0; i < wordSize && found; i++){
+                if(word.at(i) != true){
+                    found = false;
+                }
+            }
+        }
+    }while(numGuesses > 0 || !found);
+
+    /*
+    (*it).first;             // the key value (of type Key)
+    (*it).second;            // the mapped value (of type T)
+    (*it);                   // the "element value" (of type pair<const Key,T>)
+    ifstream input;
+    */
 
 
 
     return 0;
 }
 
-
+int hashKey(string word, int numItems){
+    int num = 0;
+    for(int i = 0; i < word.size(); i++){
+        num += word.at(i)*3;
+    }
+    num = num % numItems;
+    return num;
+}
 
 
 /*
